@@ -10,15 +10,15 @@
     <div class="max-w-5xl w-full bg-white rounded-lg shadow-md p-6">
         <!-- Today's Date -->
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-3xl font-bold text-blue-600">Fridge Manager</h1>
-            <p class="text-gray-500 text-lg">
+            <h1 class="text-2xl sm:text-3xl font-bold text-blue-600">Fridge Manager</h1>
+            <p class="text-gray-500 text-base sm:text-lg">
                 Today: <span id="today" class="font-medium text-gray-700">{{ today }}</span>
             </p>
         </div>
 
         <!-- Table Headers -->
-        <div class="grid grid-cols-7 font-semibold bg-blue-500 text-white px-4 py-2 rounded-t-lg">
-            <div class="col-span-2" >Name</div>
+        <div class="hidden sm:grid grid-cols-7 font-semibold bg-blue-500 text-white px-4 py-2 rounded-t-lg">
+            <div class="col-span-2">Name</div>
             <div>Category</div>
             <div>Purchase Date</div>
             <div>Status</div>
@@ -28,11 +28,25 @@
 
         <ul id="itemsList" class="divide-y divide-gray-200">
             {% for item in items %}
-                <li id="item-{{ item.uuid }}" class="grid grid-cols-7 items-center px-4 py-3">
-                    <div class="col-span-2 text-gray-800 font-medium">{{ item.name }}</div>
-                    <div class="text-gray-600 italic">{{ item.category.name }}</div>
-                    <div class="text-gray-600">{{ item.purchase_date }}</div>
+                <li id="item-{{ item.uuid }}" class="grid sm:grid-cols-7 grid-cols-1 items-start sm:items-center px-4 py-3">
+                    <!-- Name -->
+                    <div class="sm:col-span-2 text-gray-800 font-medium">
+                        <span class="block sm:hidden font-bold">Name:</span>
+                        {{ item.name }}
+                    </div>
+                    <!-- Category -->
+                    <div class="text-gray-600 italic">
+                        <span class="block sm:hidden font-bold">Category:</span>
+                        {{ item.category.name }}
+                    </div>
+                    <!-- Purchase Date -->
+                    <div class="text-gray-600">
+                        <span class="block sm:hidden font-bold">Purchase Date:</span>
+                        {{ item.purchase_date }}
+                    </div>
+                    <!-- Status -->
                     <div class="text-gray-500">
+                        <span class="block sm:hidden font-bold">Status:</span>
                         {% if item.status == 'Expired' %}
                             <span class="text-red-600 font-semibold">Expired</span>
                         {% elif item.status == 'Degraded' %}
@@ -43,14 +57,16 @@
                     </div>
                     <!-- Days Remaining -->
                     <div class="text-gray-700">
+                        <span class="block sm:hidden font-bold">Days Remaining:</span>
                         {% if item.status == 'Expired' %}
                             <span class="text-red-600">{{ item.days_remaining }} days ago</span>
                         {% else %}
                             <span>{{ item.days_remaining }} days</span>
                         {% endif %}
                     </div>
+                    <!-- Actions -->
                     <div class="flex space-x-2">
-                        <button class="text-blue-500 underline" onclick="openEditModal('{{ item.uuid }}', '{{ item.name }}', '{{ item.purchase_date }}',)">Edit</button>
+                        <button class="text-blue-500 underline" onclick="openEditModal('{{ item.uuid }}', '{{ item.name }}', '{{ item.purchase_date }}')">Edit</button>
                         <button class="text-red-500 underline" onclick="deleteItem('{{ item.uuid }}')">Delete</button>
                     </div>
                 </li>
@@ -60,7 +76,7 @@
 
     <!-- Edit Modal -->
     <div id="editModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-full sm:w-96 max-w-full">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Edit Item</h2>
             <form id="editForm">
                 <input type="hidden" id="editUuid" name="uuid">
