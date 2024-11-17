@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+</head>
+
+<body>
+    <h1>Barcode Scanner</h1>
+    <video id="video" style="width: 100%; max-width: 400px;" autoplay></video>
+    <p id="result">Result: <span></span></p>
+
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest"></script>
+    <script>
+        const video = document.getElementById('video');
+        const resultElement = document.getElementById('result').querySelector('span');
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => console.error('Error accessing the camera', err));
+
+        const codeReader = new BrowserMultiFormatReader();
+
+        video.addEventListener('play', () => {
+            codeReader.decodeFromVideoDevice(null, video, (result, err) => {
+                if (result) {
+                    resultElement.textContent = result.text;
+                    console.log(`Barcode result: ${result.text}`);
+                } else if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error(err);
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>

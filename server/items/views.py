@@ -4,6 +4,10 @@ from .models import Item, Category
 from .serializers import ItemSerializer, CategorySerializer
 from django.shortcuts import render
 from datetime import date, timedelta
+import json
+from django.views.decorators.csrf import csrf_exempt
+
+from django.http import JsonResponse
 
 
 def home(request):
@@ -31,6 +35,9 @@ def home(request):
     return render(request, "items/home.html", {"items": items, "today": today})
 
 
+def scanner(request):
+    return render(request, "items/scanner.html")
+
 class ItemViewSet(ModelViewSet):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
@@ -41,6 +48,18 @@ class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = "uuid"
+
+@csrf_exempt
+def update_item(request, uuid):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        item = Item.objects.get(uuid=uuid)
+        item.name = data['name']
+        item.purchase_date = data['purchase_date']
+        item.fridge_date = data['fridge_date']
+        item.save()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
 
 
 router = DefaultRouter()
