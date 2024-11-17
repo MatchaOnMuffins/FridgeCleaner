@@ -1,14 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fridge Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Items in Your Fridge</h1>
-    <ul>
-        {% for item in items %}
-            <li> {{item.name}} - {{item.uuid}} - {{item.fridge_date}} </li>
-        {% endfor %}
-    </ul>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-5xl w-full bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-3xl font-bold text-blue-600">Fridge Manager</h1>
+            <p class="text-gray-500 text-lg">
+                Today: <span class="font-medium text-gray-700">{{ today }}</span>
+            </p>
+        </div>
+
+        <div class="grid grid-cols-7 font-semibold bg-blue-500 text-white px-4 py-2 rounded-t-lg">
+            <div class="col-span-2">Name</div>
+            <div>Category</div>
+            <div>Purchase Date</div>
+            <div>Fridge Date</div>
+            <div>Status</div>
+            <div>Days Remaining</div>
+        </div>
+
+        <ul class="divide-y divide-gray-200">
+            {% for item in items %}
+                <li class="grid grid-cols-7 items-center px-4 py-3">
+                    <div class="col-span-2 text-gray-800 font-medium">{{ item.name }}</div>
+                    <div class="text-gray-600 italic">{{ item.category.name }}</div>
+                    <div class="text-gray-600">{{ item.purchase_date }}</div>
+                    <div class="text-gray-600">{{ item.fridge_date }}</div>
+                    <div class="text-gray-500">
+                        {% if item.status == 'Expired' %}
+                            <span class="text-red-600 font-semibold">Expired</span>
+                        {% elif item.status == 'Degraded' %}
+                            <span class="text-amber-600 font-semibold">Degraded</span>
+                        {% else %}
+                            <span class="text-green-600 font-semibold">Fresh</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-gray-700">
+                        {% if item.status == 'Expired' %}
+                            <span class="text-red-600">{{ item.days_remaining }} days ago</span>
+                        {% else %}
+                            <span>{{ item.days_remaining }} days</span>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
 </body>
 </html>
