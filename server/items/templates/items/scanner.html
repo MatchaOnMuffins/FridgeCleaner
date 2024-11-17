@@ -1,42 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barcode Scanner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
-
 <body>
     <h1>Barcode Scanner</h1>
-    <video id="video" style="width: 100%; max-width: 400px;" autoplay></video>
-    <p id="result">Result: <span></span></p>
+    <div id="scanner-container"></div>
+    <div id="barcode-result">Scan a barcode to see the result.</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest"></script>
     <script>
-        const video = document.getElementById('video');
-        const resultElement = document.getElementById('result').querySelector('span');
-
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => console.error('Error accessing the camera', err));
-
-        const codeReader = new BrowserMultiFormatReader();
-
-        video.addEventListener('play', () => {
-            codeReader.decodeFromVideoDevice(null, video, (result, err) => {
-                if (result) {
-                    resultElement.textContent = result.text;
-                    console.log(`Barcode result: ${result.text}`);
-                } else if (err && !(err instanceof ZXing.NotFoundException)) {
-                    console.error(err);
+        document.addEventListener('DOMContentLoaded', () => {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#scanner-container'),
+                    constraints: {
+                        width: 640,
+                        height: 480,
+                        facingMode: "environment" // Use rear camera
+                    },
+                },
+                decoder: {
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader"]
                 }
+            }, (err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                console.log("Quagga initialized.");
+                Quagga.start();
+            });
+
+            Quagga.onDetected((data) => {
+                const code = data.codeResult.code;
+                console.log("Barcode detected:", code);
+                document.getElementById('barcode-result').textContent = `Scanned Barcode: ${code}`;
+                Quagga.stop(); // Stop scanning after detection
             });
         });
-
     </script>
 </body>
-
 </html>

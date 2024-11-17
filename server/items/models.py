@@ -15,7 +15,6 @@ class Item(models.Model):
     name = models.CharField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     purchase_date = models.DateField()
-    fridge_date = models.DateField()
     notes = models.TextField(blank=True, null=True)
 
     def __str__(self):

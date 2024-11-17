@@ -12,6 +12,7 @@ router.register(r'categories', CategoryViewSet, basename='category')
 urlpatterns = [
     path("", views.home, name="home"),
     path("scanner", views.scanner, name="scanner"),
+    path("update-item/<uuid:uuid>/", views.update_item, name="update-item"),
 ]
 
 urlpatterns += router.urls

@@ -12,34 +12,26 @@
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-3xl font-bold text-blue-600">Fridge Manager</h1>
             <p class="text-gray-500 text-lg">
-                Today: <span class="font-medium text-gray-700">{{ today }}</span>
+                Today: <span id="today" class="font-medium text-gray-700">{{ today }}</span>
             </p>
         </div>
 
         <!-- Table Headers -->
         <div class="grid grid-cols-7 font-semibold bg-blue-500 text-white px-4 py-2 rounded-t-lg">
-            <div class="col-span-2">Name</div>
+            <div class="col-span-2" >Name</div>
             <div>Category</div>
             <div>Purchase Date</div>
-            <div>Fridge Date</div>
             <div>Status</div>
             <div>Days Remaining</div>
             <div>Actions</div>
         </div>
 
-        <!-- Items List -->
-        <ul class="divide-y divide-gray-200">
+        <ul id="itemsList" class="divide-y divide-gray-200">
             {% for item in items %}
-                <li class="grid grid-cols-7 items-center px-4 py-3">
-                    <!-- Item Name -->
+                <li id="item-{{ item.uuid }}" class="grid grid-cols-7 items-center px-4 py-3">
                     <div class="col-span-2 text-gray-800 font-medium">{{ item.name }}</div>
-                    <!-- Category -->
                     <div class="text-gray-600 italic">{{ item.category.name }}</div>
-                    <!-- Purchase Date -->
                     <div class="text-gray-600">{{ item.purchase_date }}</div>
-                    <!-- Fridge Date -->
-                    <div class="text-gray-600">{{ item.fridge_date }}</div>
-                    <!-- Status -->
                     <div class="text-gray-500">
                         {% if item.status == 'Expired' %}
                             <span class="text-red-600 font-semibold">Expired</span>
@@ -57,11 +49,9 @@
                             <span>{{ item.days_remaining }} days</span>
                         {% endif %}
                     </div>
-                    <!-- Edit Action -->
-                    <div>
-                        <button class="text-blue-500 underline" onclick="openEditModal('{{ item.uuid }}', '{{ item.name }}', '{{ item.purchase_date }}', '{{ item.fridge_date }}')">
-                            Edit
-                        </button>
+                    <div class="flex space-x-2">
+                        <button class="text-blue-500 underline" onclick="openEditModal('{{ item.uuid }}', '{{ item.name }}', '{{ item.purchase_date }}',)">Edit</button>
+                        <button class="text-red-500 underline" onclick="deleteItem('{{ item.uuid }}')">Delete</button>
                     </div>
                 </li>
             {% endfor %}
@@ -82,10 +72,6 @@
                     <label for="editPurchaseDate" class="block text-sm font-medium text-gray-700">Purchase Date</label>
                     <input type="date" id="editPurchaseDate" name="purchase_date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                 </div>
-                <div class="mb-4">
-                    <label for="editFridgeDate" class="block text-sm font-medium text-gray-700">Fridge Date</label>
-                    <input type="date" id="editFridgeDate" name="fridge_date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                </div>
                 <div class="flex justify-end">
                     <button type="button" onclick="closeEditModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded mr-2">Cancel</button>
                     <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Save</button>
@@ -95,49 +81,63 @@
     </div>
 
     <script>
-        function openEditModal(uuid, name, purchaseDate, fridgeDate) {
-            document.getElementById('editUuid').value = uuid;
-            document.getElementById('editName').value = name;
-            document.getElementById('editPurchaseDate').value = purchaseDate;
-            document.getElementById('editFridgeDate').value = fridgeDate;
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('editForm');
+        const editUuid = document.getElementById('editUuid');
+        const editName = document.getElementById('editName');
+        const editPurchaseDate = document.getElementById('editPurchaseDate');
 
-            document.getElementById('editModal').classList.remove('hidden');
+        // Open the edit modal
+        function openEditModal(uuid, name, purchaseDate) {
+            editUuid.value = uuid;
+            editName.value = name;
+            editPurchaseDate.value = purchaseDate;
+            editModal.classList.remove('hidden');
         }
 
+        // Close the edit modal
         function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
+            editModal.classList.add('hidden');
         }
 
-        document.getElementById('editForm').addEventListener('submit', function(event) {
+        // Handle edit form submission
+        editForm.addEventListener('submit', event => {
             event.preventDefault();
-
-            const uuid = document.getElementById('editUuid').value;
-            const name = document.getElementById('editName').value;
-            const purchaseDate = document.getElementById('editPurchaseDate').value;
-            const fridgeDate = document.getElementById('editFridgeDate').value;
-
-            // Send the updated data to the server (requires a backend route)
-            fetch(`/update-item/${uuid}/`, {
-                method: 'POST',
+            fetch(`/items/${editUuid.value}/`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': '{{ csrf_token }}',
                 },
                 body: JSON.stringify({
-                    name: name,
-                    purchase_date: purchaseDate,
-                    fridge_date: fridgeDate
-                })
-            })
-            .then(response => {
+                    name: editName.value,
+                    purchase_date: editPurchaseDate.value,
+                }),
+            }).then(response => {
                 if (response.ok) {
-                    // Reload the page or update the item in the DOM
                     location.reload();
                 } else {
                     alert('Failed to update item.');
                 }
             });
         });
+
+        function deleteItem(uuid) {
+            if (!confirm('Are you sure you want to delete this item?')) return;
+            fetch(`/items/${uuid}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            }).then(response => {
+                if (response.ok) { 
+                    // Remove the item from the DOM
+                    document.getElementById(`item-${uuid}`).remove();
+                } else {
+                    alert('Failed to delete item.');
+                }
+            });
+        }
     </script>
 </body>
 </html>

@@ -52,15 +52,31 @@ class CategoryViewSet(ModelViewSet):
 @csrf_exempt
 def update_item(request, uuid):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        item = Item.objects.get(uuid=uuid)
-        item.name = data['name']
-        item.purchase_date = data['purchase_date']
-        item.fridge_date = data['fridge_date']
-        item.save()
-        return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error'}, status=400)
+        try:
+            data = json.loads(request.body)
+            item = Item.objects.get(uuid=uuid)
 
+            # Update the item with the new data, validating dates
+            item.name = data.get('name', item.name)
+            
+            # Check for valid purchase_date and fridge_date
+            purchase_date = data.get('purchase_date')
+            fridge_date = data.get('fridge_date')
+            
+            if purchase_date:
+                item.purchase_date = purchase_date  # Must be in YYYY-MM-DD format
+            if fridge_date:
+                item.fridge_date = fridge_date  # Must be in YYYY-MM-DD format
+            
+            item.save()
+
+            return JsonResponse({'status': 'success', 'message': 'Item updated successfully.'})
+        except Item.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Item not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
 
 router = DefaultRouter()
 router.register(r"items", ItemViewSet)
