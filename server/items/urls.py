@@ -1,12 +1,16 @@
 from django.urls import path
-from .views import ItemCreate, ItemsList, ItemDetail, ItemDelete, ItemEdit
+from .views import ItemViewSet, CategoryViewSet
 from . import views
+from rest_framework.routers import DefaultRouter
+
+
+router = DefaultRouter()
+router.register(r'items', ItemViewSet, basename='item')
+router.register(r'categories', CategoryViewSet, basename='category')
+
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("items/", ItemsList.as_view(), name="items"),
-    path("items/create/", ItemCreate.as_view(), name="item_create"),
-    path("items/<uuid:uuid>/", ItemDetail.as_view(), name="item_detail"),
-    path("items/<uuid:uuid>/delete/", ItemDelete.as_view(), name="item_delete"),
-    path("items/<uuid:uuid>/edit/", ItemEdit.as_view(), name="item_edit"),
 ]
+
+urlpatterns += router.urls

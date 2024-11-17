@@ -1,54 +1,31 @@
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.routers import DefaultRouter
+from .models import Item, Category
+from .serializers import ItemSerializer, CategorySerializer
 from django.shortcuts import render
-
-# from django.http import HttpResponse
-# from django.shortcuts import render
-from .models import Item
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .serializers import ItemSerializer
-from django.shortcuts import get_object_or_404
 
 
 def home(request):
+    # render items to the home page
     items = Item.objects.all()
     return render(request, "items/home.html", {"items": items})
 
 
-class ItemCreate(APIView):
-    def post(self, request):
-        serializer = ItemSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ItemViewSet(ModelViewSet):
+    queryset = Item.objects.all()
+    serializer_class = ItemSerializer
+    lookup_field = "uuid"
 
 
-class ItemDetail(APIView):
-    def get(self, request, uuid):
-        item = get_object_or_404(Item, uuid=uuid)
-        serializer = ItemSerializer(item)
-        return Response(serializer.data)
-    
-    
-class ItemDelete(APIView):
-    def delete(self, request, uuid):
-        item = get_object_or_404(Item, uuid=uuid)
-        item.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    
-class ItemsList(APIView):
-    def get(self, request):
-        items = Item.objects.all()
-        serializer = ItemSerializer(items, many=True)
-        return Response(serializer.data)
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = "uuid"
 
-class ItemEdit(APIView):
-    def put(self, request, uuid):
-        item = get_object_or_404(Item, uuid=uuid)
-        serializer = ItemSerializer(item, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+router = DefaultRouter()
+router.register(r"items", ItemViewSet)
+router.register(r"categories", CategoryViewSet)
+
+urlpatterns = router.urls

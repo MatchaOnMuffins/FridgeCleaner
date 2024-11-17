@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Item
+from .models import Item, Category
 
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,3 +7,11 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = "__all__"
         def create(self, validated_data):
             return Item.objects.create(**validated_data)
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = "__all__"
+        def create(self, validated_data):
+            return Category.objects.create(**validated_data)
