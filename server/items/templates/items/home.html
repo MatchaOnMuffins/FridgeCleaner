@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fridge Manager</title>
+</head>
+<body>
+    <h1>Items in Your Fridge</h1>
+    <ul>
+        {% for item in items %}
+            <li> {{item.name}} - {{item.uuid}} - {{item.fridge_date}} </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
